@@ -1,0 +1,86 @@
+Ответы к заданию "Что вы должны сделать в консоли Django?"
+
+1.
+User.objects.create_user('takotakoti')
+User.objects.create_user('Alaveyn')
+
+2.
+Author.objects.create(user=User.objects.get(username='takotakoti'))
+Author.objects.create(user=User.objects.get(username='Alaveyn'))
+
+3.
+categories = ['horror', 'sci-fi', 'fantasy', 'today']
+for category in categories:
+    Category.objects.create(category_name=category)
+
+4.
+anton = Author.objects.get(id=2)
+natalia = Author.objects.get(id=1)
+post1 = Post.objects.create(author=anton, news_type='POST')
+post2 = Post.objects.create(author=natalia, news_type='POST')
+news1 = Post.objects.create(author=anton, news_type='NEWS')
+
+5.
+post1.category.add(Category.objects.get(category_name='horror'))
+post1.category.add(Category.objects.get(category_name='today'))
+
+post2.category.add(Category.objects.get(category_name='today'))
+post2.category.add(Category.objects.get(category_name='fantasy'))
+post2.category.add(Category.objects.get(category_name='sci-fi'))
+
+news1.category.add(Category.objects.get(category_name='today'))
+news1.category.add(Category.objects.get(category_name='horror'))
+
+6.
+from random import randint
+
+for post in range(5):
+    post_link = Post.objects.get(id=randint(1,3))
+    user_link = User.objects.get(id=randint(1,2))
+    Comment.objects.create(post=post_link, user=user_link)
+
+7.
+from random import randint
+
+for comment in Comment.objects.all():
+    if randint(0, 1):
+        comment.like()
+    else:
+        comment.dislike()
+
+for post in Post.objects.all():
+    if randint(0, 1):
+        post.like()
+    else:
+        post.dislike()
+
+8.
+/* Если консоль обновляли переменные нужно вновь объявить
+anton = Author.objects.get(id=2)
+natalia = Author.objects.get(id=1)
+*/
+anton.update_rating()
+natalia.update_rating()
+
+9.
+Author.objects.order_by('-rating').values('user__username', 'rating').first()
+
+10.
+best_post = Post.objects.order_by('-rating').values(
+    'time_post',
+    'author__user__username',
+    'rating',
+    'header',
+    'body'
+).first()
+
+best_post['body'] = best_post.preview()
+print(best_post)
+
+11.
+Comment.objects.filter(post__id=Post.objects.order_by('-rating').first().id).values(
+    'comment_time',
+    'user__username',
+    'rating',
+    'text'
+)

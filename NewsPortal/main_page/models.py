@@ -1,0 +1,74 @@
+from django.contrib.auth.models import User
+from django.db import models
+
+
+POST_TYPE = [
+    ('NEWS', 'Новости'),
+    ('POST', 'Статья')
+]
+
+
+# Create your models here.
+class Author(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    rating = models.IntegerField(default=1)
+
+    def update_rating(self):
+        # Posts
+        post_rating = self.posts.aggregate(models.Sum('rating'))['rating__sum'] or 0
+        post_rating *= 3
+
+        # Comments
+        comment_rating = Comment.objects.filter(user=self.user).aggregate(models.Sum('rating'))['rating__sum'] or 0
+
+        # Post Comment
+        post_comment_rating = Comment.objects.filter(post__author=self).aggregate(models.Sum('rating'))['rating__sum'] or 0
+
+        self.rating = post_rating + comment_rating + post_comment_rating
+        self.save()
+
+
+class Category(models.Model):
+    category_name = models.CharField(max_length=255, unique=True)
+
+
+class Post(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='posts')
+    news_type = models.CharField(max_length=4, choices=POST_TYPE)
+    time_post = models.DateTimeField(auto_now_add=True)
+    category = models.ManyToManyField(Category, through='PostCategory')
+    header = models.TextField(blank=True)
+    body = models.TextField(blank=True)
+    rating = models.IntegerField(default=1)
+
+    def preview(self):
+        return self.body[:124]+'...'
+
+    def like(self):
+        self.rating += 1
+        self.save()
+
+    def dislike(self):
+        self.rating -= 1
+        self.save()
+
+
+class PostCategory(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+
+class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField(blank=True)
+    comment_time = models.DateTimeField(auto_now_add=True)
+    rating = models.IntegerField(default=1)
+
+    def like(self):
+        self.rating += 1
+        self.save()
+
+    def dislike(self):
+        self.rating -= 1
+        self.save()
