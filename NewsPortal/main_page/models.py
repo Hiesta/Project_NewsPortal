@@ -27,6 +27,9 @@ class Author(models.Model):
         self.rating = post_rating + comment_rating + post_comment_rating
         self.save()
 
+    def __str__(self):
+        return self.user.username
+
 
 class Category(models.Model):
     category_name = models.CharField(max_length=255, unique=True)
@@ -51,6 +54,9 @@ class Post(models.Model):
     def dislike(self):
         self.rating -= 1
         self.save()
+
+    def __str__(self):
+        return f'{self.news_type}: {self.header}'
 
 
 class PostCategory(models.Model):
