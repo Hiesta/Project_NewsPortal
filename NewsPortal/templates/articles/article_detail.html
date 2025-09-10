@@ -2,8 +2,10 @@
 {% load custom_filters %}
 
 {% block h1 %}
-<h1 style="text-align:center"> {{ post.header }} </h1>
-<h4 style="text-align:center">{{ post.time_post|date:'d.M.Y' }} | {{ post.news_type }}</h4>
+<div style="text-align:center">
+<h1> {{ post.header }} </h1>
+<h4>{{ post.time_post|date:'d.M.Y' }} | {{ post.news_type }}</h4>
+</div>
 {% endblock h1 %}
 
 {% block body %}

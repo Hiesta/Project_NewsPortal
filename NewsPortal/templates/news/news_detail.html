@@ -1,0 +1,21 @@
+{% extends 'flatpages/default.html' %}
+{% load custom_filters %}
+
+{% block h1 %}
+<div style="text-align:center">
+<h1> {{ post.header }} </h1>
+<h4>{{ post.time_post|date:'d.M.Y' }} | {{ post.news_type }}</h4>
+</div>
+{% endblock h1 %}
+
+{% block body %}
+
+<p style="font-size:32px; text-align:center; padding-top: 40px">{{ post.body|censore }}</p>
+
+{% endblock body %}
+
+{% block footer %}
+
+<h5 style="text-align:center">Рейтинг: {{ post.rating }}</h5>
+
+{% endblock footer %}

@@ -1,0 +1,11 @@
+{% extends 'article_search.html' %}
+
+{% block header %}
+<div style="text-align:center">
+    Фильтр для поиска:
+    <form action="" method="get">
+    {{ filterset.form.as_p }}
+    <input type="submit" value="Найти" />
+</form>
+</div>
+{% endblock header %}

@@ -1,0 +1,55 @@
+{% extends 'flatpages/default.html' %}
+{% load custom_tags %}
+
+{% block h1 %}
+<div style="text-align:center">
+<h1> List of articles </h1>
+<h4>Количество статей: {{ posts|length }}</h4>
+</div>
+{% endblock h1 %}
+
+{% block header %}
+
+{% endblock header %}
+
+
+{% block body %}
+{% if posts %}
+{% for post in posts %}
+    {{ post.id }} - {{ post.header|truncatewords:7 }}
+    <h6>{{ post.time_post|date:'d M Y' }}</h6>
+    <h5>{{ post.body|truncatewords:20 }}</h5>
+    <hr>
+{% endfor %}
+{% else %}
+    Статьи отсутствуют
+{% endif %}
+<hr>
+<div style="text-align:center">
+<p style="text-align:center">Страницы:</p>
+{% if page_obj.has_previous %}
+    <a href="?{% current_url page=1 %}">1</a>
+    {% if page_obj.previous_page_number != 1 %}
+        ...
+        <a href="?{% current_url page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+    {% endif %}
+{% endif %}
+| <b>{{ page_obj.number }}</b> |
+{% if page_obj.has_next %}
+    <a href="?{% current_url page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+    {% if paginator.num_pages != page_obj.next_page_number %}
+        ...
+        <a href="?{% current_url page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+    {% endif %}
+{% endif %}
+</div>
+
+
+
+{% endblock body %}
+
+# ====================
+
+{% block footer %}
+
+{% endblock footer %}
