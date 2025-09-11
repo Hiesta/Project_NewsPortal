@@ -65,7 +65,7 @@ class NewsSearch(NewsList):
     template_name = 'news/news_search.html'
 
     def get_queryset(self):
-        queryset = Post.objects.filter(news_type='news').order_by('-time_post')
+        queryset = Post.objects.filter(news_type='NEWS').order_by('-time_post')
         self.filterset = PostFilter(self.request.GET, queryset=queryset)
         return self.filterset.qs
 
