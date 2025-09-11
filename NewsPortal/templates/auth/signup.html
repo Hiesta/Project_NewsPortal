@@ -1,0 +1,23 @@
+{% extends "main.html" %}
+{% load socialaccount %}
+
+{% block content %}
+  <h2>Регистрация</h2>
+
+  <form method="post" action="{% url 'account_signup' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Зарегистрироваться</button>
+  </form>
+
+  <hr>
+  <h3>Или войдите через:</h3>
+  {% providers_media_js %}
+  <ul>
+    {% for provider in socialaccount_providers %}
+      <li><a href="{% provider_login_url provider.id %}">Войти через {{ provider.name }}</a></li>
+    {% endfor %}
+  </ul>
+
+  <p>Уже есть аккаунт? <a href="{% url 'account_login' %}">Войти</a></p>
+{% endblock %}

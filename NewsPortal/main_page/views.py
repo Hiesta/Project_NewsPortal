@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -6,6 +7,22 @@ from django.views.generic import (
 from .filters import PostFilter
 from .models import Post
 from .forms import PostForm
+
+
+class AllList(LoginRequiredMixin, ListView):
+    model = Post
+    ordering = 'time_post'
+    template_name = 'news/news_list.html'
+    context_object_name = 'posts'
+    paginate_by = 10
+
+    def get_ordering(self):
+        return ['-time_post']
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_not_author'] = not self.request.user.groups.filter(name='authors').exists()
+        return context
 
 
 # XXX: ====================== NEWS ======================
@@ -19,7 +36,7 @@ class NewsList(ListView):
         return Post.objects.filter(news_type='NEWS').order_by('-time_post')
 
 
-class NewsDetail(DetailView):
+class NewsDetail(LoginRequiredMixin, DetailView):
     model = Post
     template_name = 'news/news_detail.html'
     context_object_name = 'post'
@@ -29,33 +46,36 @@ class NewsDetail(DetailView):
         return Post.objects.filter(news_type='NEWS')
 
 
-class NewsCreate(CreateView):
+class NewsCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     form_class = PostForm
     model = Post
     template_name = 'news/news_create.html'
     success_url = reverse_lazy('news_list')
+    permission_required = ('main_page.add_post',)
 
     def form_valid(self, form):
         form.instance.news_type = 'NEWS'
         return super().form_valid(form)
 
 
-class NewsUpdate(UpdateView):
+class NewsUpdate(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     form_class = PostForm
     model = Post
     template_name = 'news/news_edit.html'
     pk_url_kwarg = 'id'
     success_url = reverse_lazy('news_list')
+    permission_required = {'main_page.change_post', }
 
     def get_queryset(self):
         return Post.objects.filter(news_type='NEWS')
 
 
-class NewsDelete(DeleteView):
+class NewsDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Post
     template_name = 'post_confirm_delete.html'
     success_url = reverse_lazy('news_list')
     pk_url_kwarg = 'id'
+    permission_required = {'main_page.delete_post', }
 
     def get_queryset(self):
         return Post.objects.filter(news_type='NEWS')
@@ -86,7 +106,7 @@ class ArticleList(ListView):
         return Post.objects.filter(news_type='POST').order_by('-time_post')
 
 
-class ArticleDetail(DetailView):
+class ArticleDetail(LoginRequiredMixin, DetailView):
     model = Post
     template_name = 'articles/article_detail.html'
     context_object_name = 'post'
@@ -96,33 +116,36 @@ class ArticleDetail(DetailView):
         return Post.objects.filter(news_type='POST')
 
 
-class ArticleCreate(CreateView):
+class ArticleCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     form_class = PostForm
     model = Post
     template_name = 'articles/article_create.html'
     success_url = reverse_lazy('article_list')
+    permission_required = {'main_page.add_post', }
 
     def form_valid(self, form):
         form.instance.news_type = 'POST'
         return super().form_valid(form)
 
 
-class ArticleUpdate(UpdateView):
+class ArticleUpdate(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     form_class = PostForm
     model = Post
     template_name = 'articles/article_edit.html'
     pk_url_kwarg = 'id'
     success_url = reverse_lazy('article_list')
+    permission_required = {'main_page.change_post',}
 
     def get_queryset(self):
         return Post.objects.filter(news_type='POST')
 
 
-class ArticleDelete(DeleteView):
+class ArticleDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Post
     template_name = 'post_confirm_delete.html'
     success_url = reverse_lazy('article_list')
     pk_url_kwarg = 'id'
+    permission_required = ('main_page.delete_post',)
 
     def get_queryset(self):
         return Post.objects.filter(news_type='POST')
@@ -143,15 +166,6 @@ class ArticleSearch(ArticleList):
 
 
 # XXX: --- OLD VERSION ---
-# class PostList(ListView):
-#     model = Post
-#     ordering = 'time_post'
-#     template_name = 'news.html'
-#     context_object_name = 'news'
-#     paginate_by = 10
-#
-#     def get_ordering(self):
-#         return ['-time_post']
 #
 #
 # class PostListWithFilter(PostList):
