@@ -12,7 +12,7 @@ from .forms import PostForm
 class AllList(LoginRequiredMixin, ListView):
     model = Post
     ordering = 'time_post'
-    template_name = 'news/news_list.html'
+    template_name = 'all_list.html'
     context_object_name = 'posts'
     paginate_by = 10
 
@@ -103,7 +103,7 @@ class ArticleList(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Post.objects.filter(news_type='POST').order_by('-time_post')
+        return Post.objects.filter(news_type='ARTICLES').order_by('-time_post')
 
 
 class ArticleDetail(LoginRequiredMixin, DetailView):
@@ -113,7 +113,7 @@ class ArticleDetail(LoginRequiredMixin, DetailView):
     pk_url_kwarg = 'id'
 
     def get_queryset(self):
-        return Post.objects.filter(news_type='POST')
+        return Post.objects.filter(news_type='ARTICLES')
 
 
 class ArticleCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
@@ -124,7 +124,7 @@ class ArticleCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = {'main_page.add_post', }
 
     def form_valid(self, form):
-        form.instance.news_type = 'POST'
+        form.instance.news_type = 'ARTICLES'
         return super().form_valid(form)
 
 
@@ -137,7 +137,7 @@ class ArticleUpdate(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     permission_required = {'main_page.change_post',}
 
     def get_queryset(self):
-        return Post.objects.filter(news_type='POST')
+        return Post.objects.filter(news_type='ARTICLES')
 
 
 class ArticleDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
@@ -148,14 +148,14 @@ class ArticleDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     permission_required = ('main_page.delete_post',)
 
     def get_queryset(self):
-        return Post.objects.filter(news_type='POST')
+        return Post.objects.filter(news_type='ARTICLES')
 
 
 class ArticleSearch(ArticleList):
     template_name = 'articles/article_search.html'
 
     def get_queryset(self):
-        queryset = Post.objects.filter(news_type='POST').order_by('-time_post')
+        queryset = Post.objects.filter(news_type='ARTICLES').order_by('-time_post')
         self.filterset = PostFilter(self.request.GET, queryset=queryset)
         return self.filterset.qs
 

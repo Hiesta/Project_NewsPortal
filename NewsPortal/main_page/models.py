@@ -4,7 +4,7 @@ from django.db import models
 
 POST_TYPE = [
     ('NEWS', 'Новости'),
-    ('POST', 'Статья')
+    ('ARTICLES', 'Статья')
 ]
 
 
@@ -33,6 +33,7 @@ class Author(models.Model):
 
 class Category(models.Model):
     category_name = models.CharField(max_length=255, unique=True)
+    # subscribers = models.ManyToManyField(User, related_name='subscribes')
 
     def __str__(self):
         return self.category_name.capitalize()
@@ -40,7 +41,7 @@ class Category(models.Model):
 
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='posts')
-    news_type = models.CharField(max_length=4, choices=POST_TYPE)
+    news_type = models.CharField(max_length=8, choices=POST_TYPE)
     time_post = models.DateTimeField(auto_now_add=True)
     category = models.ManyToManyField(Category, through='PostCategory')
     header = models.TextField(blank=True)
@@ -81,3 +82,6 @@ class Comment(models.Model):
     def dislike(self):
         self.rating -= 1
         self.save()
+
+
+# ========================= Email test =========================

@@ -3,14 +3,15 @@
 
 {% block h1 %}
 <div style="text-align:center">
-<h1> List of news </h1>
+<h1> List of posts </h1>
 <h4>Количество новостей: {{ posts|length }}</h4>
 </div>
 {% endblock h1 %}
 
 {% block header %}
 <p style="text-align:center"> |
-    <button style="margin: 0px 50px 0px 50px"><a href="/">На главную</a></button> |
+    <button style="margin: 0px 50px 0px 50px"><a href="news/">Новости</a></button> |
+    <button style="margin: 0px 50px 0px 50px"><a href="articles/">Статьи</a> </button> |
 </p>
 {% endblock header %}
 
@@ -18,8 +19,8 @@
 {% block body %}
 {% if posts %}
 {% for post in posts %}
-    <h3> <a href="{{ post.id }}"> {{ post.header|truncatewords:7 }} </a> </h3>
-    <h6>{{ post.time_post|date:'d M Y' }}</h6>
+    <h3> <a href="{{ post.news_type|lower }}/{{ post.id }}"> {{ post.header|truncatewords:7 }} </a> </h3>
+    <h6>{{ post.time_post|date:'d M Y' }} | {{ post.category.all|join:' - ' }}</h6>
     <h5>{{ post.body|truncatewords:20 }}</h5>
     <hr>
 {% endfor %}

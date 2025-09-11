@@ -1,4 +1,5 @@
 from django import template
+from pprint import pprint
 
 register = template.Library()
 
@@ -10,3 +11,5 @@ def current_url(context, **kwargs):
     for key, value in kwargs.items():
         content[key] = value
     return content.urlencode()
+
+

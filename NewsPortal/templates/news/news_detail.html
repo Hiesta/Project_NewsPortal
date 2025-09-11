@@ -5,6 +5,7 @@
 <div style="text-align:center">
 <h1> {{ post.header }} </h1>
 <h4>{{ post.time_post|date:'d.M.Y' }} | {{ post.news_type }}</h4>
+<h4> {{ post.category.all|join:' | ' }} </h4>
 </div>
 {% endblock h1 %}
 
@@ -16,6 +17,11 @@
 
 {% block footer %}
 
-<h5 style="text-align:center">Рейтинг: {{ post.rating }}</h5>
+<div style="text-align:center; padding-top: 125px">
+    <button style="margin: 0px 25px 0px 25px"><a href="{{ request.path }}edit">Изменить новость</a></button> |
+    <button style="margin: 0px 25px 0px 25px"><a href="/">На главную</a></button> |
+    <button style="margin: 0px 25px 0px 25px"><a href="{{ request.path }}delete">Удалить новость</a></button>
+    <h5>Рейтинг: {{ post.rating }}</h5>
+</div>
 
 {% endblock footer %}
