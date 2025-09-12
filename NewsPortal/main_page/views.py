@@ -145,8 +145,28 @@ class ArticleCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = {'main_page.add_post', }
 
     def form_valid(self, form):
-        form.instance.news_type = 'ARTICLES'
-        return super().form_valid(form)
+        form.instance.news_type = 'NEWS'
+        response = super().form_valid(form)
+
+        post = self.object
+        categories = post.category.all()
+
+        subscribers_emails = []
+        for category in categories:
+            subscribers = category.subscribers.all()
+            subscribers_emails += [user.email for user in subscribers]
+
+        subscribers_emails = list(set(subscribers_emails))
+        if subscribers_emails:
+            send_mail(
+                subject=f'Новая статья в категории: {", ".join(
+                    [c.category_name for c in categories]
+                )}',
+                message=f'{post.header}\n\n{post.body[:50]}',
+                from_email='anton@yandex.ru',
+                recipient_list=subscribers_emails
+            )
+        return response
 
 
 class ArticleUpdate(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
