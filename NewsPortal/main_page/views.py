@@ -66,16 +66,23 @@ class NewsCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         for category in categories:
             subscribers = category.subscribers.all()
             subscribers_emails += [user.email for user in subscribers]
+        post_url = 'http://127.0.0.1:8000/news/{post.id}'
+        subject = f'Новая новость в категории: {", ".join([c.category_name for c in categories])}'
+        message = f'{post.header}\n\n{post.body[:50]}\n\nЧитать далее: {post_url}'
+        html_message = f"""
+            <h2>{post.header}</h2>
+            <p>{post.body[:50]}...</p>
+            <p><a href="http://127.0.0.1:8000/news/{post.id}">Читать новость полностью</a></p>
+        """
 
         subscribers_emails = list(set(subscribers_emails))
         if subscribers_emails:
             send_mail(
-                subject=f'Новая новость в категории: {", ".join(
-                    [c.category_name for c in categories]
-                )}',
-                message=f'{post.header}\n\n{post.body[:50]}',
+                subject=subject,
+                message=message,
                 from_email='EMAIL HERE',  # XXX: <-- Вот тут
-                recipient_list=subscribers_emails
+                recipient_list=subscribers_emails,
+                html_message=html_message
             )
         return response
 
