@@ -6,14 +6,14 @@ class MainPageConfig(AppConfig):
     name = 'main_page'
 
     def ready(self):
-        from .tasks import app_runtime
+        from .tasks import admin_email_message
         from .scheduler import main_page_scheduler
         print('started')
         main_page_scheduler.add_job(
             id='app runtime',
-            func=app_runtime,
+            func=admin_email_message,
             trigger='interval',
-            seconds=15,
+            seconds=604800,
         )
         main_page_scheduler.start()
     #     import main_page.signals

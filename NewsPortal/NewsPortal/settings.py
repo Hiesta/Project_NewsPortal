@@ -163,6 +163,6 @@ ACCOUNT_FORMS = {'signup': 'authorization.models.BasicSignupForm'}
 
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
-EMAIL_HOST_USER = 'anton'
+EMAIL_HOST_USER = 'EMAIL_USERNAME'  # XXX: В main_page/views.py реализовал отправку email'a
 EMAIL_HOST_PASSWORD = 'PASSWORD'
 EMAIL_USE_SSL = True

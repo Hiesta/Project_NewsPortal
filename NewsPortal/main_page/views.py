@@ -1,12 +1,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.core.mail import send_mail, mail_admins
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView
 )
+from django.contrib import messages
 from .filters import PostFilter
-from .models import Post, UserSubs
+from .models import Post, UserSubs, Category
 from .forms import PostForm
 
 
@@ -73,7 +74,7 @@ class NewsCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
                     [c.category_name for c in categories]
                 )}',
                 message=f'{post.header}\n\n{post.body[:50]}',
-                from_email='anton@yandex.ru',
+                from_email='EMAIL HERE',  # XXX: <-- Вот тут
                 recipient_list=subscribers_emails
             )
         return response
@@ -204,6 +205,41 @@ class ArticleSearch(ArticleList):
         context = super().get_context_data(**kwargs)
         context['filterset'] = self.filterset
         return context
+
+
+def subscribe_to_category(request, category_id):
+    if request.user.is_authenticated:
+        category = get_object_or_404(Category, id=category_id)
+        
+        subscription, created = UserSubs.objects.get_or_create(
+            user=request.user,
+            category=category
+        )
+        
+        if created:
+            messages.success(request, f'Вы успешно подписались на категорию "{category.category_name}"')
+        else:
+            messages.info(request, f'Вы уже подписаны на категорию "{category.category_name}"')
+    else:
+        messages.error(request, 'Для подписки необходимо войти в систему')
+    
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+def unsubscribe_from_category(request, category_id):
+    if request.user.is_authenticated:
+        category = get_object_or_404(Category, id=category_id)
+        
+        try:
+            subscription = UserSubs.objects.get(user=request.user, category=category)
+            subscription.delete()
+            messages.success(request, f'Вы отписались от категории "{category.category_name}"')
+        except UserSubs.DoesNotExist:
+            messages.info(request, f'Вы не подписаны на категорию "{category.category_name}"')
+    else:
+        messages.error(request, 'Для отписки необходимо войти в систему')
+    
+    return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
 # XXX: --- OLD VERSION ---

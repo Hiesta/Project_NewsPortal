@@ -20,7 +20,17 @@
 {% if posts %}
 {% for post in posts %}
     <h3> <a href="{{ post.news_type|lower }}/{{ post.id }}"> {{ post.header|truncatewords:7 }} </a> </h3>
-    <h6>{{ post.time_post|date:'d M Y' }} | {{ post.category.all|join:' - ' }}</h6>
+    <h6>{{ post.time_post|date:'d M Y' }} | 
+        {% for category in post.category.all %}
+            {% is_subscribed category as subscribed %}
+            {% if subscribed %}
+                <a href="{% url 'unsubscribe_category' category.id %}" style="text-decoration: none; color: #dc3545;">{{ category.category_name }} (отписаться)</a>
+            {% else %}
+                <a href="{% url 'subscribe_category' category.id %}" style="text-decoration: none; color: #007bff;">{{ category.category_name }} (подписаться)</a>
+            {% endif %}
+            {% if not forloop.last %} - {% endif %}
+        {% endfor %}
+    </h6>
     <h5>{{ post.body|truncatewords:20 }}</h5>
     <hr>
 {% endfor %}
