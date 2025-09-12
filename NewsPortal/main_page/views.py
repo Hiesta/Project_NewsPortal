@@ -1,11 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.shortcuts import render
+from django.core.mail import send_mail, mail_admins
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView
 )
 from .filters import PostFilter
-from .models import Post
+from .models import Post, UserSubs
 from .forms import PostForm
 
 
@@ -55,7 +56,27 @@ class NewsCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.news_type = 'NEWS'
-        return super().form_valid(form)
+        response = super().form_valid(form)
+
+        post = self.object
+        categories = post.category.all()
+
+        subscribers_emails = []
+        for category in categories:
+            subscribers = category.subscribers.all()
+            subscribers_emails += [user.email for user in subscribers]
+
+        subscribers_emails = list(set(subscribers_emails))
+        if subscribers_emails:
+            send_mail(
+                subject=f'Новая новость в категории: {", ".join(
+                    [c.category_name for c in categories]
+                )}',
+                message=f'{post.header}\n\n{post.body[:50]}',
+                from_email='anton@yandex.ru',
+                recipient_list=subscribers_emails
+            )
+        return response
 
 
 class NewsUpdate(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):

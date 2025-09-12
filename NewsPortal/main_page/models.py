@@ -12,6 +12,7 @@ POST_TYPE = [
 class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     rating = models.IntegerField(default=1)
+    subscribes = models.ManyToManyField('Category', related_name='subs', through='UserSubs', blank=True)
 
     def update_rating(self):
         # Posts
@@ -31,9 +32,16 @@ class Author(models.Model):
         return self.user.username
 
 
+class UserSubs(models.Model):
+    user = models.ForeignKey(Author, on_delete=models.CASCADE)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.user} - {self.category.category_name}'
+
+
 class Category(models.Model):
     category_name = models.CharField(max_length=255, unique=True)
-    # subscribers = models.ManyToManyField(User, related_name='subscribes')
 
     def __str__(self):
         return self.category_name.capitalize()
