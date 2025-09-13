@@ -1,0 +1,8 @@
+
+celery beat:
+
+celery -A NewsPortal beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+================================================
+celery worker:
+
+celery -A NewsPortal worker --loglevel=info --pool=solo

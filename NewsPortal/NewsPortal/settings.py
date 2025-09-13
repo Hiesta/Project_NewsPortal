@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.yandex',
+    # celery
+    'django_celery_beat',
     # disabled
     # 'main_page.apps.MainPageConfig',
 ]
@@ -163,6 +165,18 @@ ACCOUNT_FORMS = {'signup': 'authorization.models.BasicSignupForm'}
 
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
-EMAIL_HOST_USER = 'EMAIL_USERNAME'  # XXX: В main_page/views.py реализовал отправку email'a
+EMAIL_HOST_USER = 'anton'
 EMAIL_HOST_PASSWORD = 'PASSWORD'
 EMAIL_USE_SSL = True
+
+# Celery
+REDIS_PASSWORD = 'Mgfh4bfOSIfZj4ogRl7n7nbHp5k4A9n7'
+CELERY_BROKER_URL = f'redis://:{REDIS_PASSWORD}@redis-19699.c328.europe-west3-1.gce.redns.redis-cloud.com:19699'
+CELERY_RESULT_BACKEND = f'redis://:{REDIS_PASSWORD}@redis-19699.c328.europe-west3-1.gce.redns.redis-cloud.com:19699'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+
+# Celery Beat
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

@@ -9,6 +9,7 @@ from django.contrib import messages
 from .filters import PostFilter
 from .models import Post, UserSubs, Category
 from .forms import PostForm
+from .tasks import send_news_notification
 
 
 class AllList(LoginRequiredMixin, ListView):
@@ -59,31 +60,9 @@ class NewsCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         form.instance.news_type = 'NEWS'
         response = super().form_valid(form)
 
-        post = self.object
-        categories = post.category.all()
-
-        subscribers_emails = []
-        for category in categories:
-            subscribers = category.subscribers.all()
-            subscribers_emails += [user.email for user in subscribers]
-        post_url = 'http://127.0.0.1:8000/news/{post.id}'
-        subject = f'Новая новость в категории: {", ".join([c.category_name for c in categories])}'
-        message = f'{post.header}\n\n{post.body[:50]}\n\nЧитать далее: {post_url}'
-        html_message = f"""
-            <h2>{post.header}</h2>
-            <p>{post.body[:50]}...</p>
-            <p><a href="http://127.0.0.1:8000/news/{post.id}">Читать новость полностью</a></p>
-        """
-
-        subscribers_emails = list(set(subscribers_emails))
-        if subscribers_emails:
-            send_mail(
-                subject=subject,
-                message=message,
-                from_email='EMAIL HERE',  # XXX: <-- Вот тут
-                recipient_list=subscribers_emails,
-                html_message=html_message
-            )
+        # Используем Celery для асинхронной отправки уведомлений
+        send_news_notification.delay(self.object.id)
+        
         return response
 
 
@@ -153,27 +132,12 @@ class ArticleCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = {'main_page.add_post', }
 
     def form_valid(self, form):
-        form.instance.news_type = 'NEWS'
+        form.instance.news_type = 'ARTICLES'  # Исправлено с 'NEWS' на 'ARTICLES'
         response = super().form_valid(form)
 
-        post = self.object
-        categories = post.category.all()
-
-        subscribers_emails = []
-        for category in categories:
-            subscribers = category.subscribers.all()
-            subscribers_emails += [user.email for user in subscribers]
-
-        subscribers_emails = list(set(subscribers_emails))
-        if subscribers_emails:
-            send_mail(
-                subject=f'Новая статья в категории: {", ".join(
-                    [c.category_name for c in categories]
-                )}',
-                message=f'{post.header}\n\n{post.body[:50]}',
-                from_email='anton@yandex.ru',
-                recipient_list=subscribers_emails
-            )
+        # Используем Celery для асинхронной отправки уведомлений
+        send_news_notification.delay(self.object.id)
+        
         return response
 
 
