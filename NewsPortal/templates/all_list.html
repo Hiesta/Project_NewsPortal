@@ -1,5 +1,6 @@
 {% extends 'flatpages/default.html' %}
 {% load custom_tags %}
+{% load cache %}
 
 {% block h1 %}
 <div style="text-align:center">
@@ -9,10 +10,12 @@
 {% endblock h1 %}
 
 {% block header %}
+{% cache 300 buttons %}           <!--Кэширование кнопок!-->
 <p style="text-align:center"> |
     <button style="margin: 0px 50px 0px 50px"><a href="news/">Новости</a></button> |
     <button style="margin: 0px 50px 0px 50px"><a href="articles/">Статьи</a> </button> |
 </p>
+{% endcache %}
 {% endblock header %}
 
 

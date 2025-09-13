@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db import models
 
 
@@ -66,6 +67,10 @@ class Post(models.Model):
     def dislike(self):
         self.rating -= 1
         self.save()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        cache.delete(f'Post-{self.pk}')
 
     def __str__(self):
         return f'{self.news_type}: {self.header}'

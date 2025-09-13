@@ -1,11 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.shortcuts import render, get_object_or_404, redirect
-from django.core.mail import send_mail, mail_admins
-from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView
 )
+from django.shortcuts import render, get_object_or_404, redirect
+from django.core.cache import cache
+from django.core.mail import send_mail, mail_admins
 from django.contrib import messages
+from django.urls import reverse, reverse_lazy
 from .filters import PostFilter
 from .models import Post, UserSubs, Category
 from .forms import PostForm
@@ -48,6 +49,14 @@ class NewsDetail(LoginRequiredMixin, DetailView):
     def get_queryset(self):
         return Post.objects.filter(news_type='NEWS')
 
+    def get_object(self, *args, **kwargs):
+        obj = cache.get(f'Post-{self.kwargs["id"]}', None)
+        if not obj:
+            obj = super().get_object(queryset=self.queryset)
+            cache.set(f'Post-{self.kwargs["id"]}', obj, 300)
+
+        return obj
+
 
 class NewsCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     form_class = PostForm
@@ -60,7 +69,6 @@ class NewsCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         form.instance.news_type = 'NEWS'
         response = super().form_valid(form)
 
-        # Используем Celery для асинхронной отправки уведомлений
         send_news_notification.delay(self.object.id)
         
         return response
@@ -123,6 +131,14 @@ class ArticleDetail(LoginRequiredMixin, DetailView):
     def get_queryset(self):
         return Post.objects.filter(news_type='ARTICLES')
 
+    def get_object(self, *args, **kwargs):
+        obj = cache.get(f'Post-{self.kwargs["id"]}', None)
+        if not obj:
+            obj = super().get_object(queryset=self.queryset)
+            cache.set(f'Post-{self.kwargs["id"]}', obj, 300)
+
+        return obj
+
 
 class ArticleCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     form_class = PostForm
@@ -132,10 +148,9 @@ class ArticleCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = {'main_page.add_post', }
 
     def form_valid(self, form):
-        form.instance.news_type = 'ARTICLES'  # Исправлено с 'NEWS' на 'ARTICLES'
+        form.instance.news_type = 'ARTICLES'
         response = super().form_valid(form)
 
-        # Используем Celery для асинхронной отправки уведомлений
         send_news_notification.delay(self.object.id)
         
         return response
