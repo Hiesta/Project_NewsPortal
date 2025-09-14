@@ -169,6 +169,15 @@ EMAIL_HOST_USER = 'anton'
 EMAIL_HOST_PASSWORD = 'PASSWORD'
 EMAIL_USE_SSL = True
 
+ADMINS = [
+    ('Admin', 'admin@example.com'),
+]
+
+MANAGERS = ADMINS
+
+
+SERVER_EMAIL = EMAIL_HOST_USER
+
 # Celery
 REDIS_PASSWORD = 'Mgfh4bfOSIfZj4ogRl7n7nbHp5k4A9n7'
 CELERY_BROKER_URL = f'redis://:{REDIS_PASSWORD}@redis-19699.c328.europe-west3-1.gce.redns.redis-cloud.com:19699'
@@ -186,4 +195,119 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
         'LOCATION': os.path.join(BASE_DIR, 'cache_files'),
     }
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} - {levelname} - {name} - {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{asctime} - {levelname} - {message}',
+            'style': '{',
+        },
+        'detailed': {
+            'format': '{asctime} - {levelname} - {pathname}:{lineno} - {message}',
+            'style': '{',
+        },
+        'error_detailed': {
+            'format': '{asctime} - {levelname} - {pathname}:{lineno} - {message} - {exc_info}',
+            'style': '{',
+        },
+    },
+    'filters': {
+        'debug_filter': {
+            '()': 'NewsPortal.logging_filters.DebugFilter',
+        },
+        'production_filter': {
+            '()': 'NewsPortal.logging_filters.ProductionFilter',
+        },
+        'security_filter': {
+            '()': 'NewsPortal.logging_filters.SecurityFilter',
+        },
+        'error_filter': {
+            '()': 'NewsPortal.logging_filters.ErrorFilter',
+        },
+        'request_server_filter': {
+            '()': 'NewsPortal.logging_filters.RequestServerFilter',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+            'filters': ['debug_filter'],
+        },
+        # general.log (только при DEBUG = False)
+        'general_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'general.log'),
+            'formatter': 'simple',
+            'filters': ['production_filter'],
+        },
+        # errors.log (только при DEBUG = False)
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'errors.log'),
+            'formatter': 'error_detailed',
+            'filters': ['production_filter', 'error_filter'],
+        },
+        # security.log (только при DEBUG = False)
+        'security_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'security.log'),
+            'formatter': 'simple',
+            'filters': ['production_filter', 'security_filter'],
+        },
+        # почта (только при DEBUG = False)
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'detailed',
+            'filters': ['production_filter', 'request_server_filter'],
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'general_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['error_file', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['error_file', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.template': {
+            'handlers': ['error_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['error_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['security_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+    'root': {
+        'handlers': ['console', 'general_file'],
+        'level': 'DEBUG',
+    },
 }
