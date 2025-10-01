@@ -1,12 +1,23 @@
 <html>
     <head>
+        {% load static %}
         <title> SignUp/SignIn app</title>
+        <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     </head>
     <body>
-        <div>
-            <h1><a href="/">SignUp/SignIn app</a></h1>
+        <div class="header">
+            <div class="container">
+                <h1><a href="/">SignUp/SignIn app</a></h1>
+            </div>
         </div>
-        {% block content %}
-        {% endblock %}
+        <main class="container main">
+            {% block content %}
+            {% endblock %}
+        </main>
+        <footer class="footer">
+            <div class="container">
+                <p class="text-center">© {{ now|default:2025 }}</p>
+            </div>
+        </footer>
     </body>
 </html>
